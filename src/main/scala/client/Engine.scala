@@ -1,7 +1,7 @@
 package client
 
 import akka.actor.ActorSystem
-import client.Messages.LingsMessage
+import client.Lings.{InMessage, LingsMessage, OutMessage}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -16,24 +16,26 @@ object Engine {
   case class PerceptEngine() extends Engine {
     val stateHolder = StateHolder(LingsState(Nil))
 
-    def perceive(m: LingsMessage): Unit = {
+    def perceive(m: InMessage): Unit = {
       println("Received: " + m)
       stateHolder.state = LingsState(stateHolder.state.messages :+ m)
     }
 
-    def register(send: (LingsMessage) => Unit): Unit = {
+    def register(send: (OutMessage) => Unit): Unit = {
       LingsEngine(send, stateHolder)
     }
   }
 
-  case class LingsEngine(send: (LingsMessage) => Unit, stateHolder: StateHolder) extends Engine {
+  case class LingsEngine(send: (OutMessage) => Unit, stateHolder: StateHolder) extends Engine {
 
     implicit val system = ActorSystem()
 
     system.scheduler.schedule(3.seconds, 1.seconds) {
-      stateHolder.state.messages.foreach { message =>
-        println("Sending:  " + message)
-        send(message)
+      stateHolder.state.messages.foreach {
+        case outMessage: OutMessage =>
+          println("Sending:  " + outMessage)
+          send(outMessage)
+        case _ =>
       }
     }
   }

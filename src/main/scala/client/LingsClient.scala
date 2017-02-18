@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebS
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
 import client.Engine.PerceptEngine
-import client.Messages.StringMessage
+import client.Parser._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,13 +25,14 @@ case class LingsClient(engine: PerceptEngine) {
 
   private val (queue, upgradeResponse): (SourceQueueWithComplete[Strict], Future[WebSocketUpgradeResponse]) = Source.queue[TextMessage.Strict](10, OverflowStrategy.dropNew)
     .viaMat(httpFlow)(Keep.both)
-    .map(m => StringMessage(m.asTextMessage.getStrictText))
+    .filter(_.isText)
+    .map(_.asTextMessage)
+    .filter(_.isStrict)
+    .map(m => toLingsMessage(m.getStrictText))
     .toMat(Sink.foreach(engine.perceive))(Keep.left)
     .run()
 
-  engine.register { m =>
-    queue.offer(TextMessage(m.text))
-  }
+  engine.register(m => queue.offer(toTextMessage(m)))
 
   private val connected = upgradeResponse.map { upgrade =>
     if (upgrade.response.status == StatusCodes.SwitchingProtocols) {
