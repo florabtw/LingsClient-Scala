@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.ws.TextMessage.Strict
 import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source, SourceQueueWithComplete}
-import akka.stream.{ActorMaterializer, OverflowStrategy}
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings, OverflowStrategy, Supervision}
 import client.Parser._
 import engine.PerceptEngine
 
@@ -16,8 +16,14 @@ import scala.concurrent.Future
 
 case class LingsClient(engine: PerceptEngine) {
 
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  val supervisionDecider: Supervision.Decider = { e =>
+    e.printStackTrace()
+    Supervision.stop
+  }
+
+  private implicit val system       = ActorSystem()
+  private val materializerSettings  = ActorMaterializerSettings(system).withSupervisionStrategy(supervisionDecider)
+  private implicit val materializer = ActorMaterializer(materializerSettings)(system)
 
   private val httpFlow: Flow[Message, Message, Future[WebSocketUpgradeResponse]] = {
     Http().webSocketClientFlow(WebSocketRequest("ws://localhost:8080"))
