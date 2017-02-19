@@ -8,8 +8,8 @@ import akka.http.scaladsl.model.ws.TextMessage.Strict
 import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebSocketUpgradeResponse}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
-import client.Engine.PerceptEngine
 import client.Parser._
+import engine.PerceptEngine
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
