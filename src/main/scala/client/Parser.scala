@@ -10,11 +10,11 @@ object Parser {
     val msgType = (msgJson \ "type").as[String]
     msgType match {
       case "map"   => msgJson.as[MapMessage]
-      case "agent" => msgJson.as[EntityMessage]
+      case "agent" => msgJson.as[AgentMessage]
       case "food"  => msgJson.as[FoodMessage]
       case "id"    => msgJson.as[IdMessage]
-      case "move"  => msgJson.as[EntityMoveMessage]
-      case "eat"   => msgJson.as[EntityEatMessage]
+      case "move"  => msgJson.as[AgentMoveMessage]
+      case "eat"   => msgJson.as[AgentEatMessage]
     }
   }
 
