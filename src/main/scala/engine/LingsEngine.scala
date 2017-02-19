@@ -1,7 +1,7 @@
 package engine
 
 import agent.LingsAgent
-import agent.LingsAgent.{AgentState, NoState}
+import agent.LingsAgent.{AgentState, EmptyState}
 import akka.actor.ActorSystem
 import client.Lings.{InMessage, OutMessage}
 import engine.LingsEngine.StateHolder
@@ -16,7 +16,7 @@ object LingsEngine {
 sealed trait Engine
 
 case class PerceptEngine(agent: LingsAgent) extends Engine {
-  val stateHolder = StateHolder(NoState)
+  val stateHolder = StateHolder(EmptyState)
 
   def perceive(m: InMessage): Unit = {
     println("Received: " + m)

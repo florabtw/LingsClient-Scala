@@ -7,7 +7,7 @@ object Lings {
   sealed trait OutMessage extends LingsMessage
   sealed trait InMessage extends LingsMessage
 
-  case class MapMessage(columns: Int, rows: Int, map: String) extends InMessage
+  case class MapMessage(columns: Int, rows: Int, repr: String) extends InMessage
 
   case class AgentMessage(id: Int, x: Int, y: Int) extends InMessage
 
