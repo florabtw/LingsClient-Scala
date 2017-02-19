@@ -9,13 +9,13 @@ import engine.LingsEngine.StateHolder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
+sealed trait LingsEngine
+
 object LingsEngine {
   case class StateHolder(var state: AgentState)
 }
 
-sealed trait Engine
-
-case class PerceptEngine(agent: LingsAgent) extends Engine {
+case class PerceptEngine(agent: LingsAgent) extends LingsEngine {
   val stateHolder = StateHolder(EmptyState)
 
   def perceive(m: InMessage): Unit = {
@@ -24,11 +24,11 @@ case class PerceptEngine(agent: LingsAgent) extends Engine {
   }
 
   def register(send: (OutMessage) => Unit): Unit = {
-    LingsEngine(agent, send, stateHolder)
+    GameEngine(agent, send, stateHolder)
   }
 }
 
-case class LingsEngine[T](agent: LingsAgent, send: (OutMessage) => Unit, stateHolder: StateHolder) extends Engine {
+case class GameEngine[T](agent: LingsAgent, send: (OutMessage) => Unit, stateHolder: StateHolder) extends LingsEngine {
 
   implicit val system = ActorSystem()
 

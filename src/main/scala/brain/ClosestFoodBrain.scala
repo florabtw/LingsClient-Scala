@@ -4,7 +4,7 @@ import agent.LingsAgent.{AgentState, EmptyState}
 import agent.ReactiveAgent.{Agent, Food, State}
 import client.LingsProtocol.{AgentEatMessage, AgentMoveMessage, OutMessage}
 
-case class ClosestFoodBrain() extends Brain {
+case class ClosestFoodBrain() extends LingsBrain {
   private def manhattanDistance(agent: Agent)(food: Food) = {
     val diffX = Math.abs(agent.x - food.x)
     val diffY = Math.abs(agent.y - food.y)
