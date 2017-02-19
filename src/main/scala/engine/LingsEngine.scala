@@ -3,7 +3,7 @@ package engine
 import agent.LingsAgent
 import agent.LingsAgent.{AgentState, EmptyState}
 import akka.actor.ActorSystem
-import client.Lings.{InMessage, OutMessage}
+import client.LingsProtocol.{InMessage, OutMessage}
 import engine.LingsEngine.StateHolder
 
 import scala.concurrent.ExecutionContext.Implicits.global

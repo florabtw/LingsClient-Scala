@@ -1,7 +1,7 @@
 package client
 
 import akka.http.scaladsl.model.ws.TextMessage
-import client.Lings._
+import client.LingsProtocol._
 import play.api.libs.json.Json
 
 object Parser {
