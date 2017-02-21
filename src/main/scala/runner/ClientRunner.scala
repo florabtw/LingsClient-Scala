@@ -3,11 +3,11 @@ package runner
 import agent.ReactiveAgent
 import brain.ClosestFoodBrain
 import client.LingsClient
-import engine.PerceptEngine
+import engine.LingsEngine
 
 object ClientRunner extends App {
   val brain = ClosestFoodBrain()
   val agent = ReactiveAgent(brain)
-  val engine = PerceptEngine(agent)
+  val engine = LingsEngine(agent)
   LingsClient(engine)
 }

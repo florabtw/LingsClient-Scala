@@ -9,12 +9,12 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebS
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, OverflowStrategy, Supervision}
 import client.Parser._
-import engine.PerceptEngine
+import engine.LingsEngine
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class LingsClient(engine: PerceptEngine) {
+case class LingsClient(engine: LingsEngine) {
 
   val supervisionDecider: Supervision.Decider = { e =>
     e.printStackTrace()
