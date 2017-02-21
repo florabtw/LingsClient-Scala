@@ -12,9 +12,12 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener {
   var send: (OutMessage) => Unit = identity _
   val turnClock: TurnClock       = TurnClock(this)
 
+  println(agentState)
+
   def perceive(m: InMessage): Unit = {
     println("Received: " + m)
     agentState = agent.perceive(m)(agentState)
+    println(agentState)
   }
 
   def register(send: (OutMessage) => Unit): Unit = {

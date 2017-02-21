@@ -7,7 +7,21 @@ import client.LingsProtocol._
 import ReactiveAgent._
 
 object ReactiveAgent {
-  case class State(map: LingsMap, agents: List[Agent], foods: List[Food], ids: List[Int]) extends AgentState
+  case class State(map: LingsMap, agents: List[Agent], foods: List[Food], ids: List[Int]) extends AgentState {
+    override def toString: String = map match {
+      case EmptyMap => "(no map here)"
+      case WorldMap(rows, cols, _) =>
+        val foodMap  = foods.map(f => (f.x, f.y) -> "F").toMap
+        val agentMap = agents.map(a => (a.x, a.y) -> a.id.toString)
+        val mapMap   = (foodMap ++ agentMap).withDefaultValue(".")
+        val tiles    = for {
+          y <- 0 until cols
+          x <- 0 until rows
+        } yield mapMap((x, y))
+
+        tiles.grouped(cols).map(_.mkString(" ")).mkString("\n")
+    }
+  }
 
   sealed trait LingsMap
   case object EmptyMap extends LingsMap
