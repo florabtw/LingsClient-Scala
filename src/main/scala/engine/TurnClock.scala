@@ -7,8 +7,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 object TurnClock {
-  trait TurnListener {
-    def onTurn: Option[Ticks]
+  trait TurnListener[T] {
+    def onTurn(state: T): Option[Ticks]
   }
 
   case class Ticks(value: Int)
@@ -20,17 +20,17 @@ object TurnClock {
   }
 }
 
-case class TurnClock(listener: TurnListener) {
+case class TurnClock[T](listener: TurnListener[T], state: T) {
   private          val ticksPerSecond  = 30
   private          val millisPerSecond = 1000
   private          val tickDuration    = (millisPerSecond / ticksPerSecond).millis
   private implicit val system          = ActorSystem()
 
-  scheduleTurn(tickDuration)
+  def start(): Unit = scheduleTurn(tickDuration)
 
   private def scheduleTurn(duration: FiniteDuration): Unit = {
     system.scheduler.scheduleOnce(duration) {
-      val turnTickCost = listener.onTurn.getOrElse(1.tick)
+      val turnTickCost = listener.onTurn(state).getOrElse(1.tick)
       scheduleTurn(tickDuration * turnTickCost.value)
     }
   }

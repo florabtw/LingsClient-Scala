@@ -3,12 +3,15 @@ package engine
 import agent.LingsAgent
 import agent.LingsAgent.{AgentState, EmptyState}
 import client.LingsProtocol.{InMessage, OutMessage}
+import engine.LingsEngine.SendMessage
 import engine.TurnClock.{IntToTicks, Ticks, TurnListener}
 
-case class LingsEngine(agent: LingsAgent) extends TurnListener {
-  var agentState: AgentState     = EmptyState
-  var send: (OutMessage) => Unit = identity _
-  val turnClock: TurnClock       = TurnClock(this)
+object LingsEngine {
+  type SendMessage = (OutMessage => Unit)
+}
+
+case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
+  var agentState: AgentState = EmptyState
 
   println(agentState)
 
@@ -18,11 +21,11 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener {
     println(agentState)
   }
 
-  def register(send: (OutMessage) => Unit): Unit = {
-    this.send = send
+  def register(send: SendMessage): Unit = {
+    TurnClock(this, send).start()
   }
 
-  override def onTurn: Option[Ticks] = {
+  override def onTurn(send: SendMessage): Option[Ticks] = {
     val nextActionOpt = agent.nextAction(agentState)
     nextActionOpt.foreach { action =>
       println("Sending:  " + action)
