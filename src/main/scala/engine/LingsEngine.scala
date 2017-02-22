@@ -3,9 +3,7 @@ package engine
 import agent.LingsAgent
 import agent.LingsAgent.{AgentState, EmptyState}
 import client.LingsProtocol.{InMessage, OutMessage}
-import engine.TurnClock.TurnListener
-
-import scala.concurrent.duration._
+import engine.TurnClock.{IntToTicks, Ticks, TurnListener}
 
 case class LingsEngine(agent: LingsAgent) extends TurnListener {
   var agentState: AgentState     = EmptyState
@@ -24,13 +22,13 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener {
     this.send = send
   }
 
-  override def onTurn: Option[FiniteDuration] = {
+  override def onTurn: Option[Ticks] = {
     val nextActionOpt = agent.nextAction(agentState)
     nextActionOpt.foreach { action =>
       println("Sending:  " + action)
       send(action)
     }
 
-    nextActionOpt.map { _ => 500.millis }
+    nextActionOpt.map { _ => 15.ticks }
   }
 }
