@@ -4,8 +4,8 @@ import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 object LingsProtocol {
   sealed trait LingsMessage
-  sealed trait OutMessage extends LingsMessage
   sealed trait InMessage extends LingsMessage
+  sealed trait OutMessage extends InMessage
 
   case class MapMessage(columns: Int, rows: Int, map: String) extends InMessage
 
@@ -15,9 +15,9 @@ object LingsProtocol {
 
   case class IdMessage(id: Int) extends InMessage
 
-  case class AgentMoveMessage(id: Int, x: Int, y: Int) extends InMessage with OutMessage
+  case class AgentMoveMessage(id: Int, x: Int, y: Int) extends OutMessage
 
-  case class AgentEatMessage(id: Int) extends InMessage with OutMessage
+  case class AgentEatMessage(id: Int) extends OutMessage
 
   object OutMessage {
     implicit val writes = new Writes[OutMessage] {

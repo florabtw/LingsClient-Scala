@@ -1,10 +1,9 @@
 package agent
 
 import agent.LingsAgent.{AgentState, EmptyState}
-import agent.ReactiveAgent.{Agent, EmptyMap, State, WorldMap}
+import agent.ReactiveAgent.{Agent, EmptyMap, State, WorldMap, _}
 import brain.LingsBrain
 import client.LingsProtocol._
-import ReactiveAgent._
 
 object ReactiveAgent {
   case class State(map: LingsMap, agents: List[Agent], foods: List[Food], ids: List[Int]) extends AgentState {
@@ -92,5 +91,5 @@ case class ReactiveAgent(brain: LingsBrain) extends LingsAgent {
 
   private def intersects(agent: Agent, food: Food) = agent.x == food.x && agent.y == food.y
 
-  override def nextAction: (AgentState) => Option[OutMessage] = brain.nextAction
+  override def nextAction: AgentState => Option[OutMessage] = brain.nextAction
 }

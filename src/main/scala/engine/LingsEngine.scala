@@ -11,7 +11,7 @@ object LingsEngine {
 }
 
 case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
-  var agentState: AgentState = EmptyState
+  private var agentState: AgentState = EmptyState
 
   println(agentState)
 
@@ -27,9 +27,11 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
 
   override def onTurn(send: SendMessage): Option[Ticks] = {
     val nextActionOpt = agent.nextAction(agentState)
+
     nextActionOpt.foreach { action =>
       println("Sending:  " + action)
       send(action)
+      agentState = agent.perceive(action)(agentState)
     }
 
     nextActionOpt.map { _ => 15.ticks }

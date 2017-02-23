@@ -10,70 +10,89 @@ import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 
 class LingsEngineTest extends WordSpec with Matchers with BeforeAndAfterEach with MockitoSugar {
 
-  val inMessage: InMessage = mock[InMessage]
+  val inMessage:  InMessage  = mock[InMessage]
+  var outMessage: OutMessage = mock[OutMessage]
+
   val agent: LingsAgent = mock[LingsAgent]
 
-  var mockPerceive:  InMessage => AgentState => AgentState = _
-  var mockPerceived: AgentState => AgentState = _
+  var perceive:  InMessage => AgentState => AgentState = _
+  var perceived: AgentState => AgentState = _
 
   var nextAction: AgentState => Option[OutMessage] = _
   var send:       SendMessage = _
-  var outMessage: OutMessage = _
 
   var lingsEngine: LingsEngine = _
 
   override def beforeEach: Unit = {
-    mockPerceive  = mock[Function[InMessage, AgentState => AgentState]]
-    mockPerceived = mock[Function[AgentState, AgentState]]
 
     lingsEngine = LingsEngine(agent)
 
-    send = mock[SendMessage]
-    outMessage = mock[OutMessage]
+    send       = mock[SendMessage]
+    perceive   = mock[InMessage => AgentState => AgentState]
+    perceived  = mock[AgentState => AgentState]
     nextAction = mock[AgentState => Option[OutMessage]]
+    when(agent.perceive).thenReturn(perceive)
+    when(perceive.apply(inMessage)).thenReturn(perceived)
+    when(perceive.apply(outMessage)).thenReturn(perceived)
     when(agent.nextAction).thenReturn(nextAction)
     when(nextAction.apply(EmptyState)).thenReturn(Some(outMessage))
-    when(agent.perceive).thenReturn(mockPerceive)
-    when(mockPerceive.apply(inMessage)).thenReturn(mockPerceived)
   }
 
-  "Lings Engine" should {
-    "forward perceptions to the agent" in {
-      lingsEngine.perceive(inMessage)
+  "Lings Engine" when {
+    "perceiving message" should {
+      "forward perceptions to the agent" in {
+        lingsEngine.perceive(inMessage)
 
-      verify(mockPerceive).apply(inMessage)
+        verify(perceive).apply(inMessage)
+      }
+
+      "start with empty state" in {
+        lingsEngine.perceive(inMessage)
+
+        verify(perceived).apply(EmptyState)
+      }
+
+      "update agent state" in {
+        val expectedState = mock[AgentState]
+        when(perceived.apply(EmptyState)).thenReturn(expectedState)
+
+        lingsEngine.perceive(inMessage)
+
+        verify(perceived).apply(EmptyState)
+
+        lingsEngine.perceive(inMessage)
+
+        verify(perceived).apply(expectedState)
+      }
     }
 
-    "start with empty state" in {
-      lingsEngine.perceive(inMessage)
+    "taking turn" should {
+      "take 15 ticks per turn" in {
+        val ticks = lingsEngine.onTurn(send)
 
-      verify(mockPerceived).apply(EmptyState)
-    }
+        ticks shouldBe defined
+        ticks.get.value shouldBe 15
+      }
 
-    "send the agent state with every request" in {
-      val expectedState = mock[AgentState]
-      when(mockPerceived.apply(EmptyState)).thenReturn(expectedState)
+      "send the agent action during a turn" in {
+        lingsEngine.onTurn(send)
 
-      lingsEngine.perceive(inMessage)
+        verify(send).apply(outMessage)
+      }
 
-      verify(mockPerceived).apply(EmptyState)
+      "update agent state" in {
+        val expectedState = mock[AgentState]
+        when(perceived.apply(EmptyState)).thenReturn(expectedState)
+        when(nextAction.apply(expectedState)).thenReturn(Some(outMessage))
 
-      lingsEngine.perceive(inMessage)
+        lingsEngine.onTurn(send)
 
-      verify(mockPerceived).apply(expectedState)
-    }
+        verify(nextAction).apply(EmptyState)
 
-    "take 15 ticks per turn" in {
-      val ticks = lingsEngine.onTurn(send)
+        lingsEngine.onTurn(send)
 
-      ticks           shouldBe defined
-      ticks.get.value shouldBe 15
-    }
-
-    "send the agent action during a turn" in {
-      lingsEngine.onTurn(send)
-
-      verify(send).apply(outMessage)
+        verify(nextAction).apply(expectedState)
+      }
     }
   }
 }
