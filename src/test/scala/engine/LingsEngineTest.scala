@@ -77,6 +77,20 @@ class LingsEngineTest extends WordSpec with Matchers with BeforeAndAfterEach wit
 
         verify(perceived, never()).apply(expectedState)
       }
+
+      "ignore perceptions sent by own agent with duplicate messages" in {
+        val expectedState = mock[AgentState]
+        when(perceived.apply(EmptyState)).thenReturn(expectedState)
+
+        lingsEngine.onTurn(send)
+
+        verify(perceived).apply(EmptyState)
+
+        lingsEngine.perceive(outMessage)
+        lingsEngine.perceive(outMessage)
+
+        verify(perceived, times(1)).apply(expectedState)
+      }
     }
 
     "taking turn" should {

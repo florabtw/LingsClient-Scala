@@ -2,7 +2,7 @@ package engine
 
 import agent.LingsAgent
 import agent.LingsAgent.{AgentState, EmptyState}
-import client.LingsProtocol.{InMessage, OutMessage}
+import client.LingsProtocol.{InMessage, LingsMessage, OutMessage}
 import engine.LingsEngine.SendMessage
 import engine.TurnClock.{IntToTicks, Ticks, TurnListener}
 
@@ -13,8 +13,8 @@ object LingsEngine {
 }
 
 case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
-  private var agentState: AgentState             = EmptyState
-  private val sentBuffer: ListBuffer[OutMessage] = ListBuffer[OutMessage]()
+  private var agentState: AgentState               = EmptyState
+  private val sentBuffer: ListBuffer[LingsMessage] = ListBuffer[LingsMessage]()
 
   println(agentState)
 
@@ -24,6 +24,8 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
     if (!sentBuffer.contains(m)) {
       agentState = agent.perceive(m)(agentState)
       println(agentState)
+    } else {
+      sentBuffer -= m
     }
   }
 
