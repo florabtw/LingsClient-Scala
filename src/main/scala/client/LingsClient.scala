@@ -9,12 +9,17 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebS
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, OverflowStrategy, Supervision}
 import client.Parser._
+import com.typesafe.config.{Config, ConfigFactory}
 import engine.LingsEngine
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 case class LingsClient(engine: LingsEngine) {
+
+  val config: Config = ConfigFactory.load()
+  val host: String   = config.getString("lings.host")
 
   val supervisionDecider: Supervision.Decider = { e =>
     e.printStackTrace()
@@ -26,7 +31,7 @@ case class LingsClient(engine: LingsEngine) {
   private implicit val materializer = ActorMaterializer(materializerSettings)(system)
 
   private val httpFlow: Flow[Message, Message, Future[WebSocketUpgradeResponse]] = {
-    Http().webSocketClientFlow(WebSocketRequest("ws://localhost:8080"))
+    Http().webSocketClientFlow(WebSocketRequest(host))
   }
 
   private val (queue, upgradeResponse): (SourceQueueWithComplete[Strict], Future[WebSocketUpgradeResponse]) = Source.queue[TextMessage.Strict](10, OverflowStrategy.dropNew)
@@ -48,5 +53,8 @@ case class LingsClient(engine: LingsEngine) {
     }
   }
 
-  connected.onComplete { _ => println("Connection success!") }
+  connected.onComplete {
+    case Success(_) => println("Connection success!")
+    case Failure(e) => println(e)
+  }
 }
