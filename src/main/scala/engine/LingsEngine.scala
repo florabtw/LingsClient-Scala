@@ -21,12 +21,13 @@ case class LingsEngine(agent: LingsAgent) extends TurnListener[SendMessage] {
   def perceive(m: InMessage): Unit = {
     println("Received: " + m)
 
-    if (!sentBuffer.contains(m)) {
-      agentState = agent.perceive(m)(agentState)
-      println(agentState)
-    } else {
+    if (sentBuffer.contains(m)) {
       sentBuffer -= m
+    } else {
+      agentState = agent.perceive(m)(agentState)
     }
+
+    println(agentState)
   }
 
   def register(send: SendMessage): Unit = {

@@ -2,7 +2,7 @@ package agent
 
 import agent.LingsAgent.{AgentState, EmptyState}
 import agent.ReactiveAgent.{Agent, EmptyMap, State, WorldMap, _}
-import brain.LingsBrain
+import brain.ReactiveBrain
 import client.LingsProtocol._
 
 object ReactiveAgent {
@@ -44,7 +44,7 @@ object ReactiveAgent {
   def toEat(msg: AgentEatMessage): Eat = Eat(msg.id)
 }
 
-case class ReactiveAgent(brain: LingsBrain) extends LingsAgent {
+case class ReactiveAgent(brain: ReactiveBrain) extends LingsAgent {
   override def perceive: InMessage => AgentState => AgentState = {
     case msg: MapMessage       => perceiveMap(toMap(msg))
     case msg: AgentMessage     => perceiveAgent(toAgent(msg))
@@ -91,5 +91,8 @@ case class ReactiveAgent(brain: LingsBrain) extends LingsAgent {
 
   private def intersects(agent: Agent, food: Food) = agent.x == food.x && agent.y == food.y
 
-  override def nextAction: AgentState => Option[OutMessage] = brain.nextAction
+  override def nextAction: AgentState => Option[OutMessage] = {
+    case EmptyState   => None
+    case state: State => brain.nextAction(state)
+  }
 }

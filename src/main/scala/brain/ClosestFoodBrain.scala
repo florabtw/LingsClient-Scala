@@ -1,10 +1,9 @@
 package brain
 
-import agent.LingsAgent.{AgentState, EmptyState}
 import agent.ReactiveAgent.{Agent, Food, State}
 import client.LingsProtocol.{AgentEatMessage, AgentMoveMessage, OutMessage}
 
-case class ClosestFoodBrain() extends LingsBrain {
+case class ClosestFoodBrain() extends ReactiveBrain {
   private def manhattanDistance(agent: Agent)(food: Food) = {
     val diffX = Math.abs(agent.x - food.x)
     val diffY = Math.abs(agent.y - food.y)
@@ -19,8 +18,7 @@ case class ClosestFoodBrain() extends LingsBrain {
     case (Agent(id,  _,  _), Food( _,  _))            => AgentEatMessage(id)
   }
 
-  override def nextAction: AgentState => Option[OutMessage] = {
-    case EmptyState                       => None
+  override def nextAction: State => Option[OutMessage] = {
     case State(_,    Nil,     _,       _) => None
     case State(_,      _,   Nil,       _) => None
     case State(_,      _,     _,     Nil) => None
