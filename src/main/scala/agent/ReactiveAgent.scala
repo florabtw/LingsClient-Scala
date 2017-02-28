@@ -74,7 +74,7 @@ case class ReactiveAgent(brain: ReactiveBrain) extends LingsAgent {
 
   private def perceiveId(id: Int): AgentState => AgentState = {
     case EmptyState   => State(EmptyMap, Nil, Nil, List(id))
-    case state: State => state.copy(ids = state.ids :+ id)
+    case state: State => state.copy(ids = (state.ids :+ id).distinct)
   }
 
   private def perceiveEat(eat: Eat): AgentState => AgentState = {
