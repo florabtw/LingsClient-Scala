@@ -34,7 +34,7 @@ object ReactiveAgent {
 
   case class Eat(id: Int)
 
-  def toMap(msg: MapMessage): WorldMap = WorldMap(msg.rows, msg.columns, msg.map)
+  def toMap(msg: MapMessage): WorldMap = WorldMap(msg.rows, msg.columns, msg.tiles)
 
   def toAgent(msg: AgentMessage): Agent = Agent(msg.id, msg.x, msg.y)
   def toAgent(msg: AgentMoveMessage): Agent = Agent(msg.id, msg.x, msg.y)
@@ -62,7 +62,7 @@ case class ReactiveAgent(brain: ReactiveBrain) extends LingsAgent {
   private def perceiveAgent(agent: Agent): AgentState => AgentState = {
     case EmptyState   => State(EmptyMap, List(agent), Nil, Nil)
     case state: State =>
-      val filtered = state.agents.filterNot(_.id == agent.id)
+      val filtered   = state.agents.filterNot(_.id == agent.id)
       val nextAgents = filtered :+ agent
       state.copy(agents = nextAgents)
   }
