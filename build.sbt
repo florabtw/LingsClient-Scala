@@ -11,3 +11,5 @@ libraryDependencies ++= Seq(
   "org.scalatest"     %% "scalatest"                   % "3.0.1"     % Test,
   "org.mockito"        % "mockito-core"                % "2.7.11"    % Test
 )
+
+mainClass in Compile := Some("runner.ClientRunner")
