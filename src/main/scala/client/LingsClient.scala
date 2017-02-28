@@ -38,8 +38,11 @@ case class LingsClient(engine: LingsEngine) {
     .viaMat(httpFlow)(Keep.both)
     .filter(_.isText)
     .map(_.asTextMessage)
-    .filter(_.isStrict)
-    .map(m => toLingsMessage(m.getStrictText))
+    .mapAsync(parallelism = 3) {
+      case TextMessage.Strict(message)  => Future.successful(message)
+      case TextMessage.Streamed(stream) => stream.runFold[String]("")(_ + _)
+    }
+    .map(m => toLingsMessage(m))
     .toMat(Sink.foreach(engine.perceive))(Keep.left)
     .run()
 
